@@ -30,17 +30,56 @@ function App() {
   }, []);
 
   function toggleTodo(id) {
-    const newTodos = todos.map((todo) => {
-      if (todo.id === id) {
-        todo.completed = !todo.completed;
-      }
-      return todo;
+    async function postData(url, data ) {
+      // Default options are marked with *
+      const response = await fetch(url, {
+        method: "PATCH", // *GET, POST, PUT, DELETE, etc.
+
+        headers: {
+          "Content-Type": "application/json",
+          // 'Content-Type': 'application/x-www-form-urlencoded',
+        },
+
+        body: JSON.stringify(data), // body data type must match "Content-Type" header
+      });
+      return await response.json(); // parses JSON response into native JavaScript objects
+    }
+//
+  let obj = todos.find(todo => todo.id  === id);
+  obj.done = !obj.done
+  console.log(obj);
+//
+
+    postData("http://localhost:4000/todo/"+obj.id, {
+      'done': obj.done,
+    }).then((data) => {
+      console.log(data); // JSON data parsed by `response.json()` call
+      setTodos(todos.map((i) => i ));
     });
-    setTodos(newTodos);
   }
+
 
   function removeTodo(id) {
     setTodos(todos.filter((todo) => todo.id !== id));
+    async function deleteData( url, data ) {
+      const response = await fetch(url, {
+        method: "DELETE", // *GET, POST, PUT, DELETE, etc.
+
+        headers: {
+          "Content-Type": "application/json",
+          // 'Content-Type': 'application/x-www-form-urlencoded',
+        },
+
+        body: JSON.stringify(data), // body data type must match "Content-Type" header
+      });
+      return await response.json(); // parses JSON response into native JavaScript objects
+    }
+    deleteData("http://localhost:4000/delete-item", {
+      id: id,
+    }).then((data) => {
+      console.log(data); // JSON data parsed by `response.json()` call
+      setTodos(todos.filter((todo) => todo.id !== id));
+    });
   }
 
   function addTodo(title) {
@@ -69,6 +108,7 @@ function App() {
         todos.concat([
           {
             name: title,
+            id: data.item.id,
             done: false,
           },
         ])
